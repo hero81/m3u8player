@@ -3,32 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M3U8 Player</title>
+  <title>M3U8 Player with Snow</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
+      background-color: #1E1E2F; /* 深蓝色背景 */
+      color: #ffffff;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background-color: #121212;
-      position: relative;
-      overflow: hidden;
+      overflow: hidden; /* 避免滚动条影响雪花效果 */
     }
     h1 {
       margin-bottom: 20px;
       font-size: 2.5rem;
       text-align: center;
-      z-index: 10;
     }
     .player-container {
       width: 90%;
       max-width: 800px;
       text-align: center;
-      z-index: 10;
+      position: relative;
+      z-index: 1; /* 确保内容在雪花效果之上 */
     }
     video {
       width: 100%;
@@ -64,89 +64,31 @@
       margin-top: 20px;
       font-size: 14px;
       color: #888;
-      z-index: 10;
-    }
-    .app {
-      width: 100%;
-      height: 100%;
       position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      z-index: 1;
     }
-    .box {
-      width: 400px;
-      height: 300px;
-      position: relative;
-    }
-    .circle-box {
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      border-radius: 10px;
-      position: absolute;
-      overflow: hidden;
-    }
-    .circle:first-child {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      border: 30px solid #7BF52A;
-      box-sizing: border-box;
-      position: absolute;
-      top: -38px;
-      left: -40px;
-      animation: move-y 3.5s linear infinite;
-    }
-    .circle:last-child {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: linear-gradient(136deg, #7BF52A 0%, #FFCD56 100%);
-      box-sizing: border-box;
-      position: absolute;
-      bottom: -30px;
-      right: -30px;
-      animation: move-y 5s ease-in-out infinite;
-    }
-    .bg-filter {
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, .05);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(6px);
-      border-radius: 10px;
-      box-sizing: border-box;
-      position: absolute;
-    }
-    @keyframes move-y {
-      0% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-16px);
-      }
-      100% {
-        transform: translateY(0);
-      }
+      pointer-events: none; /* 让雪花画布不影响其他元素的点击 */
+      z-index: 0;
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="circle-box">
-      <div class="circle"></div>
-      <div class="circle"></div>
-      <div class="bg-filter"></div>
-    </div>
-    <h1>M3U8 Player</h1>
-    <div class="player-container">
-      <video id="video-player" controls></video>
-      <input type="text" id="m3u8-url" placeholder="输入M3U8文件网络地址" />
-      <button id="play-btn">Play</button>
-    </div>
+  <h1>M3U8 Player</h1>
+  <div class="player-container">
+    <video id="video-player" controls></video>
+    <input type="text" id="m3u8-url" placeholder="输入M3U8文件网络地址" />
+    <button id="play-btn">Play</button>
   </div>
-  <footer>Powered by telegram channel<a href="https://t.me/hjfork" target="_blank">@hjfork</a>  |<a href="https://t.me/helloworld_1024" target="_blank">@helloworld_1024</a>| <a href="https://t.me/CitizenScyu" target="_blank">@CitizenScyu</a></footer>
+  <footer>Powered by <a href="https://t.me/hjfork" target="_blank">@hjfork</a> | <a href="https://t.me/helloworld_1024" target="_blank">@helloworld_1024</a> | <a href="https://t.me/CitizenScyu" target="_blank">@CitizenScyu</a></footer>
+
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://raw.githubusercontent.com/lidppp/canvas-snow/refs/heads/master/snow.js"></script>
   <script>
     const playButton = document.getElementById('play-btn');
     const video = document.getElementById('video-player');
