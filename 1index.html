@@ -29,17 +29,18 @@
     .player-container {
       width: 90%;
       max-width: 800px;
+      max-height: 80vh;
       text-align: center;
       background: rgba(0, 0, 0, 0.7);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
     }
     video {
       width: 100%;
-      height: auto;
-      max-height: 90vh; /* 限制播放器最大高度 */
-      max-width: 100%; /* 限制播放器最大宽度 */
+      max-height: 100%;
+      object-fit: contain;
       border: 1px solid #444;
       border-radius: 8px;
       margin-bottom: 20px;
