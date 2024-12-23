@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M3U8 Player</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <title>Video.js M3U8 Player</title>
+  <!-- 引入 Video.js 样式 -->
+  <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -34,15 +35,6 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    }
-    video {
-      width: 100%;
-      height: auto;
-      max-height: 90vh; /* 限制播放器最大高度 */
-      max-width: 100%; /* 限制播放器最大宽度 */
-      border: 1px solid #444;
-      border-radius: 8px;
-      margin-bottom: 20px;
     }
     input {
       width: calc(100% - 20px);
@@ -91,9 +83,12 @@
   </style>
 </head>
 <body>
-  <h1>M3U8 Player</h1>
+  <h1>Video.js M3U8 Player</h1>
   <div class="player-container">
-    <video id="video-player" controls></video>
+    <!-- Video.js 播放器 -->
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" width="600" height="400">
+      <source id="m3u8-source" type="application/x-mpegURL">
+    </video>
     <input type="text" id="m3u8-url" placeholder="输入M3U8文件网络地址" />
     <button id="play-btn">Play</button>
   </div>
@@ -104,11 +99,13 @@
     <a href="https://t.me/CitizenScyu" target="_blank">@CitizenScyu</a>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <!-- 引入 Video.js 脚本 -->
+  <script src="https://vjs.zencdn.net/7.11.4/video.js"></script>
   <script>
     const playButton = document.getElementById('play-btn');
     const video = document.getElementById('video-player');
     const input = document.getElementById('m3u8-url');
+    const m3u8Source = document.getElementById('m3u8-source');
 
     playButton.addEventListener('click', () => {
       const m3u8Url = input.value.trim();
@@ -117,19 +114,10 @@
         return;
       }
 
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(m3u8Url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play();
-        });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = m3u8Url;
-        video.play();
-      } else {
-        alert('您的浏览器不支持HLS播放');
-      }
+      // 使用 Video.js 播放器播放 M3U8 文件
+      m3u8Source.src = m3u8Url;
+      video.load();
+      video.play();
     });
   </script>
 </body>
