@@ -38,11 +38,12 @@
     video {
       width: 100%;
       height: auto;
-      max-height: 90vh; /* 限制播放器最大高度 */
-      max-width: 100%; /* 限制播放器最大宽度 */
+      max-height: 90vh;
+      max-width: 100%;
       border: 1px solid #444;
       border-radius: 8px;
       margin-bottom: 20px;
+      transition: transform 0.5s; /* 添加旋转的平滑过渡 */
     }
     input {
       width: calc(100% - 20px);
@@ -96,6 +97,7 @@
     <video id="video-player" controls></video>
     <input type="text" id="m3u8-url" placeholder="输入M3U8文件网络地址" />
     <button id="play-btn">Play</button>
+    <button id="rotate-btn">Rotate</button> <!-- 旋转按钮 -->
   </div>
   <footer>
     Powered by 
@@ -107,8 +109,11 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
     const playButton = document.getElementById('play-btn');
+    const rotateButton = document.getElementById('rotate-btn');
     const video = document.getElementById('video-player');
     const input = document.getElementById('m3u8-url');
+
+    let rotationAngle = 0; // 旋转角度初始化
 
     playButton.addEventListener('click', () => {
       const m3u8Url = input.value.trim();
@@ -130,6 +135,11 @@
       } else {
         alert('您的浏览器不支持HLS播放');
       }
+    });
+
+    rotateButton.addEventListener('click', () => {
+      rotationAngle = (rotationAngle + 90) % 360; // 每次旋转90度
+      video.style.transform = `rotate(${rotationAngle}deg)`; // 更新旋转角度
     });
   </script>
 </body>
