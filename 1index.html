@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video.js M3U8 Player</title>
-  <!-- 引入 Video.js 样式 -->
   <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -36,6 +35,15 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+    video {
+      width: 100%;
+      height: auto;
+      max-height: 90vh; /* 限制播放器最大高度 */
+      max-width: 100%; /* 限制播放器最大宽度 */
+      border: 1px solid #444;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
     input {
       width: calc(100% - 20px);
@@ -86,8 +94,8 @@
 <body>
   <h1>Video.js M3U8 Player</h1>
   <div class="player-container">
-    <!-- Video.js 播放器 -->
-    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto" width="100%" height="auto" style="max-height: 90vh; max-width: 800px; border: 1px solid #444; border-radius: 8px;">
+    <!-- 使用 Video.js 播放器 -->
+    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto">
       <source id="m3u8-source" type="application/x-mpegURL">
     </video>
     <input type="text" id="m3u8-url" placeholder="输入M3U8文件网络地址" />
@@ -115,10 +123,10 @@
         return;
       }
 
-      // 使用 Video.js 播放器播放 M3U8 文件
+      // 设置 Video.js 播放器的 M3U8 文件链接
       m3u8Source.src = m3u8Url;
-      video.load();
-      video.play();
+      video.load();  // 重新加载视频
+      video.play();  // 播放视频
     });
   </script>
 </body>
