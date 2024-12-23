@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video.js M3U8 Player</title>
-  <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet">
+  <title>JWPlayer M3U8 Player</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -35,15 +34,6 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    }
-    video {
-      width: 100%;
-      height: auto;
-      max-height: 90vh; /* 限制播放器最大高度 */
-      max-width: 100%; /* 限制播放器最大宽度 */
-      border: 1px solid #444;
-      border-radius: 8px;
-      margin-bottom: 20px;
     }
     input {
       width: calc(100% - 20px);
@@ -92,12 +82,10 @@
   </style>
 </head>
 <body>
-  <h1>Video.js M3U8 Player</h1>
+  <h1>JWPlayer M3U8 Player</h1>
   <div class="player-container">
-    <!-- 使用 Video.js 播放器 -->
-    <video id="video-player" class="video-js vjs-default-skin" controls preload="auto">
-      <source id="m3u8-source" type="application/x-mpegURL">
-    </video>
+    <!-- JWPlayer 播放器容器 -->
+    <div id="jw-player"></div>
     <input type="text" id="m3u8-url" placeholder="输入M3U8文件网络地址" />
     <button id="play-btn">Play</button>
   </div>
@@ -108,13 +96,19 @@
     <a href="https://t.me/CitizenScyu" target="_blank">@CitizenScyu</a>
   </footer>
 
-  <!-- 引入 Video.js 脚本 -->
-  <script src="https://vjs.zencdn.net/7.11.4/video.js"></script>
+  <!-- 引入 JWPlayer 的 JS 文件 -->
+  <script src="https://cdn.jwplayer.com/libraries/your-jwplayer-library-id.js"></script>
   <script>
     const playButton = document.getElementById('play-btn');
-    const video = document.getElementById('video-player');
     const input = document.getElementById('m3u8-url');
-    const m3u8Source = document.getElementById('m3u8-source');
+    
+    // 初始化 JWPlayer
+    let player = jwplayer("jw-player").setup({
+      width: "100%",
+      aspectratio: "16:9",
+      autostart: false,
+      controls: true,
+    });
 
     playButton.addEventListener('click', () => {
       const m3u8Url = input.value.trim();
@@ -123,10 +117,14 @@
         return;
       }
 
-      // 设置 Video.js 播放器的 M3U8 文件链接
-      m3u8Source.src = m3u8Url;
-      video.load();  // 重新加载视频
-      video.play();  // 播放视频
+      // 设置 JWPlayer 的 M3U8 播放源
+      player.setup({
+        file: m3u8Url,
+        type: 'hls',
+      });
+
+      // 播放视频
+      player.play();
     });
   </script>
 </body>
