@@ -199,6 +199,13 @@
         .copyable.copied {
             background: #e0f3ff;
         }
+
+        .input-error {
+            color: #ff3b30;
+            font-size: 13px;
+            margin-top: 4px;
+            min-height: 18px;
+        }
     </style>
 </head>
 <body>
@@ -209,6 +216,7 @@
             <label>匹配内容</label>
             <input type="text" id="targetContent" placeholder="输入要匹配的内容（最多8个字符）" maxlength="8">
             <div class="progress" id="contentLength"></div>
+            <div id="inputError" class="input-error"></div>
         </div>
         
         <div class="form-group match-type-group">
@@ -357,10 +365,13 @@
             const targetContent = document.getElementById('targetContent').value;
             const matchType = document.querySelector('input[name="matchType"]:checked').value;
             const caseSensitive = document.getElementById('caseSensitive').checked;
+            const inputError = document.getElementById('inputError');
             
             if (!targetContent) {
-                alert('请输入匹配内容');
+                inputError.textContent = '请输入匹配内容';
                 return;
+            } else {
+                inputError.textContent = '';
             }
             
             const loading = document.getElementById('loading');
