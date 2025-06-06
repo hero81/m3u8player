@@ -126,6 +126,12 @@
             margin: 0 auto 10px;
         }
         
+        .progress {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--ios-gray);
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -165,6 +171,7 @@
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p>正在生成中...</p>
+            <div class="progress" id="progress"></div>
         </div>
         
         <div class="result" id="result">
@@ -176,7 +183,16 @@
     </div>
 
     <script>
+        let isGenerating = false;
+        let totalAttempts = 0;
+        let startTime = null;
+        let batchId = 0;
+
         document.getElementById('generateBtn').addEventListener('click', async () => {
+            if (isGenerating) {
+                return;
+            }
+
             const targetContent = document.getElementById('targetContent').value.toLowerCase();
             const contentLength = parseInt(document.getElementById('contentLength').value);
             const matchType = document.querySelector('input[name="matchType"]:checked').value;
@@ -189,34 +205,54 @@
             const btn = document.getElementById('generateBtn');
             const loading = document.getElementById('loading');
             const result = document.getElementById('result');
+            const progress = document.getElementById('progress');
             
+            isGenerating = true;
             btn.disabled = true;
             loading.classList.add('show');
             result.classList.remove('show');
+            totalAttempts = 0;
+            startTime = Date.now();
+            batchId = 0;
             
             try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        targetContent,
-                        contentLength,
-                        matchType
-                    })
-                });
-                
-                const data = await response.json();
-                
-                document.getElementById('address').textContent = data.address;
-                document.getElementById('privateKey').textContent = data.privateKey;
-                document.getElementById('attempts').textContent = data.attempts.toLocaleString();
-                document.getElementById('time').textContent = data.time.toFixed(2);
-                
-                result.classList.add('show');
+                while (isGenerating) {
+                    const response = await fetch('/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            targetContent,
+                            contentLength,
+                            matchType,
+                            batchId: batchId++,
+                            startTime
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    totalAttempts += data.attempts;
+                    
+                    progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次，当前批次 ${batchId}`;
+                    
+                    if (data.status === 'success') {
+                        document.getElementById('address').textContent = data.address;
+                        document.getElementById('privateKey').textContent = data.privateKey;
+                        document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
+                        document.getElementById('time').textContent = data.totalTime.toFixed(2);
+                        
+                        result.classList.add('show');
+                        isGenerating = false;
+                        break;
+                    }
+                    
+                    // 添加小延迟，避免请求过于频繁
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             } catch (error) {
                 alert('生成失败，请重试');
+                isGenerating = false;
             } finally {
                 btn.disabled = false;
                 loading.classList.remove('show');
