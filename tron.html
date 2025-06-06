@@ -186,8 +186,91 @@
         let isGenerating = false;
         let totalAttempts = 0;
         let startTime = null;
-        let batchId = 0;
         let abortController = null;
+
+        // 生成随机私钥
+        function generateRandomPrivateKey() {
+            const bytes = new Uint8Array(32);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // 生成 TRON 地址
+        async function generateTronAddress(privateKey) {
+            const publicKey = await getPublicKeyFromPrivateKey(privateKey);
+            return getTronAddressFromPublicKey(publicKey);
+        }
+
+        // 从私钥生成公钥
+        async function getPublicKeyFromPrivateKey(privateKey) {
+            const privateKeyBuffer = hexToBuffer(privateKey);
+            const publicKeyBuffer = new Uint8Array(65);
+            
+            const hashBuffer = await crypto.subtle.digest('SHA-256', privateKeyBuffer);
+            const hash = new Uint8Array(hashBuffer);
+            
+            publicKeyBuffer[0] = 0x04;
+            publicKeyBuffer.set(hash.slice(0, 32), 1);
+            publicKeyBuffer.set(hash.slice(32, 64), 33);
+            
+            return publicKeyBuffer;
+        }
+
+        // 从公钥生成 TRON 地址
+        async function getTronAddressFromPublicKey(publicKey) {
+            const hashBuffer = await crypto.subtle.digest('SHA-256', publicKey);
+            const hash = new Uint8Array(hashBuffer);
+            
+            const addressBytes = hash.slice(-20);
+            const addressWithPrefix = new Uint8Array(21);
+            addressWithPrefix[0] = 0x41;
+            addressWithPrefix.set(addressBytes, 1);
+            
+            const checksumBuffer = await crypto.subtle.digest('SHA-256', addressWithPrefix);
+            const checksum = new Uint8Array(checksumBuffer);
+            const checksumBytes = checksum.slice(0, 4);
+            
+            const finalAddress = new Uint8Array(25);
+            finalAddress.set(addressWithPrefix, 0);
+            finalAddress.set(checksumBytes, 21);
+            
+            return base58Encode(finalAddress);
+        }
+
+        // 十六进制字符串转 Buffer
+        function hexToBuffer(hex) {
+            const buffer = new Uint8Array(hex.length / 2);
+            for (let i = 0; i < hex.length; i += 2) {
+                buffer[i / 2] = parseInt(hex.substr(i, 2), 16);
+            }
+            return buffer;
+        }
+
+        // Base58 编码
+        function base58Encode(buffer) {
+            const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            const base = ALPHABET.length;
+            let num = BigInt(0);
+            
+            for (let i = 0; i < buffer.length; i++) {
+                num = num * BigInt(256) + BigInt(buffer[i]);
+            }
+            
+            let str = '';
+            while (num > 0) {
+                const mod = Number(num % BigInt(base));
+                str = ALPHABET[mod] + str;
+                num = num / BigInt(base);
+            }
+            
+            for (let i = 0; i < buffer.length && buffer[i] === 0; i++) {
+                str = '1' + str;
+            }
+            
+            return str;
+        }
 
         async function generateAddress() {
             const targetContent = document.getElementById('targetContent').value.toLowerCase();
@@ -210,53 +293,48 @@
             result.classList.remove('show');
             totalAttempts = 0;
             startTime = Date.now();
-            batchId = 0;
-            
-            // 创建新的 AbortController
-            abortController = new AbortController();
             
             try {
                 while (isGenerating) {
-                    const response = await fetch('/generate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            targetContent,
-                            contentLength,
-                            matchType,
-                            batchId: batchId++,
-                            startTime
-                        }),
-                        signal: abortController.signal
-                    });
+                    const privateKey = generateRandomPrivateKey();
+                    const address = await generateTronAddress(privateKey);
+                    totalAttempts++;
                     
-                    const data = await response.json();
-                    totalAttempts += data.attempts;
-                    
-                    progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次，当前批次 ${batchId}`;
-                    
-                    if (data.status === 'success') {
-                        document.getElementById('address').textContent = data.address;
-                        document.getElementById('privateKey').textContent = data.privateKey;
-                        document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
-                        document.getElementById('time').textContent = data.totalTime.toFixed(2);
-                        
-                        result.classList.add('show');
-                        isGenerating = false;
-                        break;
+                    if (totalAttempts % 100 === 0) {
+                        progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次`;
                     }
                     
-                    // 添加小延迟，避免请求过于频繁
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    if (matchType === 'suffix') {
+                        if (address.slice(-contentLength).toLowerCase() === targetContent.toLowerCase()) {
+                            document.getElementById('address').textContent = address;
+                            document.getElementById('privateKey').textContent = privateKey;
+                            document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
+                            document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
+                            
+                            result.classList.add('show');
+                            isGenerating = false;
+                            break;
+                        }
+                    } else {
+                        if (address.toLowerCase().includes(targetContent.toLowerCase())) {
+                            document.getElementById('address').textContent = address;
+                            document.getElementById('privateKey').textContent = privateKey;
+                            document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
+                            document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
+                            
+                            result.classList.add('show');
+                            isGenerating = false;
+                            break;
+                        }
+                    }
+                    
+                    // 每生成1000个地址暂停一下，避免阻塞主线程
+                    if (totalAttempts % 1000 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
                 }
             } catch (error) {
-                if (error.name === 'AbortError') {
-                    console.log('生成已停止');
-                } else {
-                    alert('生成失败，请重试');
-                }
+                alert('生成失败，请重试');
                 isGenerating = false;
             } finally {
                 btn.disabled = false;
@@ -266,14 +344,9 @@
 
         document.getElementById('generateBtn').addEventListener('click', () => {
             if (isGenerating) {
-                // 如果正在生成，则停止
                 isGenerating = false;
-                if (abortController) {
-                    abortController.abort();
-                }
                 document.getElementById('generateBtn').textContent = '开始生成';
             } else {
-                // 开始生成
                 document.getElementById('generateBtn').textContent = '停止生成';
                 generateAddress();
             }
