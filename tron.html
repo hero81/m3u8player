@@ -307,7 +307,7 @@
                     }
                     
                     if (matchType === 'suffix') {
-                        if (address.slice(-contentLength.textContent.split(': ')[1]).toLowerCase() === targetContent.toLowerCase()) {
+                        if (address.slice(-targetContent.length).toLowerCase() === targetContent.toLowerCase()) {
                             document.getElementById('address').textContent = address;
                             document.getElementById('privateKey').textContent = privateKey;
                             document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
