@@ -253,7 +253,7 @@
         
         <div class="form-group">
             <label>匹配内容</label>
-            <input type="text" id="targetContent" placeholder="输入要匹配的内容（最多8个字符）" maxlength="8">
+            <input type="text" id="targetContent" placeholder="输入要匹配的内容（*代表任意字符，最多8个字符）" maxlength="8">
             <div class="progress" id="contentLength"></div>
             <div id="inputError" class="input-error"></div>
         </div>
@@ -305,8 +305,8 @@
 
         // 监听匹配内容输入变化
         targetContent.addEventListener('input', function() {
-            // 只允许字母和数字
-            let filtered = this.value.replace(/[^a-zA-Z0-9]/g, '');
+            // 只允许字母、数字和*
+            let filtered = this.value.replace(/[^a-zA-Z0-9\*]/g, '');
             if (filtered !== this.value) {
                 this.value = filtered;
             }
@@ -422,6 +422,14 @@
             totalAttempts = 0;
             startTime = Date.now();
             
+            // 构造正则表达式
+            let pattern = targetContent.replace(/\*/g, '[0-9]');
+            if (matchType === 'suffix') {
+                pattern = pattern + '$';
+            }
+            const flags = caseSensitive ? '' : 'i';
+            const regex = new RegExp(pattern, flags);
+            
             try {
                 while (isGenerating) {
                     const privateKey = generateRandomPrivateKey();
@@ -432,36 +440,16 @@
                         progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次`;
                     }
                     
-                    let matchAddress = address;
-                    let matchTarget = targetContent;
-                    if (!caseSensitive) {
-                        matchAddress = address.toLowerCase();
-                        matchTarget = targetContent.toLowerCase();
-                    }
-                    if (matchType === 'suffix') {
-                        if (matchAddress.slice(-matchTarget.length) === matchTarget) {
-                            document.getElementById('address').textContent = address;
-                            document.getElementById('privateKey').textContent = privateKey;
-                            document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
-                            document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
-                            
-                            result.classList.add('show');
-                            isGenerating = false;
-                            generateBtn.textContent = '开始生成';
-                            break;
-                        }
-                    } else {
-                        if (matchAddress.includes(matchTarget)) {
-                            document.getElementById('address').textContent = address;
-                            document.getElementById('privateKey').textContent = privateKey;
-                            document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
-                            document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
-                            
-                            result.classList.add('show');
-                            isGenerating = false;
-                            generateBtn.textContent = '开始生成';
-                            break;
-                        }
+                    if (regex.test(address)) {
+                        document.getElementById('address').textContent = address;
+                        document.getElementById('privateKey').textContent = privateKey;
+                        document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
+                        document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
+                        
+                        result.classList.add('show');
+                        isGenerating = false;
+                        generateBtn.textContent = '开始生成';
+                        break;
                     }
                     
                     // 每生成1000个地址暂停一下，避免阻塞主线程
