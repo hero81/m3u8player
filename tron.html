@@ -145,11 +145,7 @@
         <div class="form-group">
             <label>匹配内容</label>
             <input type="text" id="targetContent" placeholder="输入要匹配的内容（最多8个字符）" maxlength="8">
-        </div>
-        
-        <div class="form-group">
-            <label>匹配长度</label>
-            <input type="number" id="contentLength" min="1" max="8" value="4" readonly>
+            <div class="progress" id="contentLength">当前长度：0</div>
         </div>
         
         <div class="form-group">
@@ -193,7 +189,7 @@
         // 监听匹配内容输入变化
         targetContent.addEventListener('input', function() {
             const length = this.value.length;
-            contentLength.value = length;
+            contentLength.textContent = `当前长度：${length}`;
         });
 
         // 生成随机私钥
@@ -282,7 +278,6 @@
 
         async function generateAddress() {
             const targetContent = document.getElementById('targetContent').value.toLowerCase();
-            const contentLength = parseInt(document.getElementById('contentLength').value);
             const matchType = document.querySelector('input[name="matchType"]:checked').value;
             
             if (!targetContent) {
@@ -312,7 +307,7 @@
                     }
                     
                     if (matchType === 'suffix') {
-                        if (address.slice(-contentLength).toLowerCase() === targetContent.toLowerCase()) {
+                        if (address.slice(-contentLength.textContent.split(': ')[1]).toLowerCase() === targetContent.toLowerCase()) {
                             document.getElementById('address').textContent = address;
                             document.getElementById('privateKey').textContent = privateKey;
                             document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
