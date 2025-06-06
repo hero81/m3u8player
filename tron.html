@@ -179,6 +179,26 @@
                 padding: 10px;
             }
         }
+
+        .case-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .case-label {
+            min-width: 70px;
+            margin-right: 16px;
+        }
+
+        .copyable {
+            cursor: pointer;
+            color: var(--ios-blue);
+            user-select: all;
+            transition: background 0.2s;
+        }
+        .copyable.copied {
+            background: #e0f3ff;
+        }
     </style>
 </head>
 <body>
@@ -204,11 +224,14 @@
                 </label>
             </div>
         </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label class="radio-option">
-                <input type="checkbox" id="caseSensitive">
-                区分大小写
-            </label>
+        <div class="form-group case-group">
+            <label class="case-label">&nbsp;</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="checkbox" id="caseSensitive">
+                    区分大小写
+                </label>
+            </div>
         </div>
         
         <button id="generateBtn">开始生成</button>
@@ -220,8 +243,8 @@
         </div>
         
         <div class="result" id="result">
-            <p><strong>地址：</strong><span id="address"></span></p>
-            <p><strong>私钥：</strong><span id="privateKey"></span></p>
+            <p><strong>地址：</strong><span id="address" class="copyable" title="点击复制"></span></p>
+            <p><strong>私钥：</strong><span id="privateKey" class="copyable" title="点击复制"></span></p>
             <p><strong>尝试次数：</strong><span id="attempts"></span></p>
             <p><strong>耗时：</strong><span id="time"></span>秒</p>
         </div>
@@ -415,6 +438,29 @@
                 generateAddress();
             }
         });
+
+        // 复制功能
+        function addCopyListener(id) {
+            const el = document.getElementById(id);
+            el.addEventListener('click', async function() {
+                if (!el.textContent) return;
+                try {
+                    await navigator.clipboard.writeText(el.textContent);
+                    el.classList.add('copied');
+                    const old = el.textContent;
+                    el.textContent = '已复制';
+                    setTimeout(() => {
+                        el.classList.remove('copied');
+                        el.textContent = old;
+                    }, 800);
+                } catch (e) {
+                    // fallback
+                    alert('复制失败，请手动复制');
+                }
+            });
+        }
+        addCopyListener('address');
+        addCopyListener('privateKey');
     </script>
 </body>
 </html> 
