@@ -415,6 +415,11 @@
             const result = document.getElementById('result');
             const progress = document.getElementById('progress');
             
+            if (!window.crypto || !window.crypto.subtle || !window.crypto.getRandomValues) {
+                inputError.textContent = '当前浏览器不支持安全加密运算，建议使用Chrome 或其他浏览器';
+                return;
+            }
+            
             isGenerating = true;
             generateBtn.textContent = '停止生成';
             loading.classList.add('show');
