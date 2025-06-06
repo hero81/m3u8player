@@ -253,7 +253,7 @@
         
         <div class="form-group">
             <label>匹配内容</label>
-            <input type="text" id="targetContent" placeholder="输入要匹配的内容（*代表任意字符，最多8个字符）" maxlength="8">
+            <input type="text" id="targetContent" placeholder="输入要匹配的内容（*为，最多8个字符）" maxlength="8">
             <div class="progress" id="contentLength"></div>
             <div id="inputError" class="input-error"></div>
         </div>
@@ -334,7 +334,7 @@
             const privateKeyBuffer = hexToBuffer(privateKey);
             const publicKeyBuffer = new Uint8Array(65);
             
-            const hashBuffer = await crypto.subtle.digest('SHA-256', privateKeyBuffer);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', privateKeyBuffer.buffer);
             const hash = new Uint8Array(hashBuffer);
             
             publicKeyBuffer[0] = 0x04;
@@ -346,7 +346,7 @@
 
         // 从公钥生成 TRON 地址
         async function getTronAddressFromPublicKey(publicKey) {
-            const hashBuffer = await crypto.subtle.digest('SHA-256', publicKey);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', publicKey.buffer);
             const hash = new Uint8Array(hashBuffer);
             
             const addressBytes = hash.slice(-20);
@@ -354,7 +354,7 @@
             addressWithPrefix[0] = 0x41;
             addressWithPrefix.set(addressBytes, 1);
             
-            const checksumBuffer = await crypto.subtle.digest('SHA-256', addressWithPrefix);
+            const checksumBuffer = await crypto.subtle.digest('SHA-256', addressWithPrefix.buffer);
             const checksum = new Uint8Array(checksumBuffer);
             const checksumBytes = checksum.slice(0, 4);
             
@@ -458,7 +458,7 @@
                     }
                 }
             } catch (error) {
-                alert('生成失败，请重试');
+                inputError.textContent = '生成失败，请重试';
                 isGenerating = false;
                 generateBtn.textContent = '开始生成';
             } finally {
@@ -490,8 +490,7 @@
                         el.textContent = old;
                     }, 800);
                 } catch (e) {
-                    // fallback
-                    alert('复制失败，请手动复制');
+                    document.getElementById('inputError').textContent = '复制失败，请手动复制';
                 }
             });
         }
