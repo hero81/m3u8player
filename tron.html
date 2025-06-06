@@ -187,12 +187,9 @@
         let totalAttempts = 0;
         let startTime = null;
         let batchId = 0;
+        let abortController = null;
 
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            if (isGenerating) {
-                return;
-            }
-
+        async function generateAddress() {
             const targetContent = document.getElementById('targetContent').value.toLowerCase();
             const contentLength = parseInt(document.getElementById('contentLength').value);
             const matchType = document.querySelector('input[name="matchType"]:checked').value;
@@ -215,6 +212,9 @@
             startTime = Date.now();
             batchId = 0;
             
+            // 创建新的 AbortController
+            abortController = new AbortController();
+            
             try {
                 while (isGenerating) {
                     const response = await fetch('/generate', {
@@ -228,7 +228,8 @@
                             matchType,
                             batchId: batchId++,
                             startTime
-                        })
+                        }),
+                        signal: abortController.signal
                     });
                     
                     const data = await response.json();
@@ -251,11 +252,30 @@
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
             } catch (error) {
-                alert('生成失败，请重试');
+                if (error.name === 'AbortError') {
+                    console.log('生成已停止');
+                } else {
+                    alert('生成失败，请重试');
+                }
                 isGenerating = false;
             } finally {
                 btn.disabled = false;
                 loading.classList.remove('show');
+            }
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            if (isGenerating) {
+                // 如果正在生成，则停止
+                isGenerating = false;
+                if (abortController) {
+                    abortController.abort();
+                }
+                document.getElementById('generateBtn').textContent = '开始生成';
+            } else {
+                // 开始生成
+                document.getElementById('generateBtn').textContent = '停止生成';
+                generateAddress();
             }
         });
     </script>
