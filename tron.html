@@ -145,7 +145,7 @@
         <div class="form-group">
             <label>匹配内容</label>
             <input type="text" id="targetContent" placeholder="输入要匹配的内容（最多8个字符）" maxlength="8">
-            <div class="progress" id="contentLength">当前长度：0</div>
+            <div class="progress" id="contentLength"></div>
         </div>
         
         <div class="form-group">
@@ -189,7 +189,7 @@
         // 监听匹配内容输入变化
         targetContent.addEventListener('input', function() {
             const length = this.value.length;
-            contentLength.textContent = `当前长度：${length}`;
+            contentLength.textContent = length > 0 ? `当前长度：${length}` : '';
         });
 
         // 生成随机私钥
