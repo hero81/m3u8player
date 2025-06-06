@@ -150,6 +150,35 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 12px;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .form-group, .match-type-group {
+                margin-bottom: 14px;
+            }
+            input, select, button {
+                font-size: 15px;
+                padding: 10px;
+            }
+            .radio-group {
+                gap: 16px;
+            }
+            .result {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -174,6 +203,12 @@
                     包含匹配
                 </label>
             </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label class="radio-option">
+                <input type="checkbox" id="caseSensitive">
+                区分大小写
+            </label>
         </div>
         
         <button id="generateBtn">开始生成</button>
@@ -202,6 +237,11 @@
 
         // 监听匹配内容输入变化
         targetContent.addEventListener('input', function() {
+            // 只允许字母和数字
+            let filtered = this.value.replace(/[^a-zA-Z0-9]/g, '');
+            if (filtered !== this.value) {
+                this.value = filtered;
+            }
             const length = this.value.length;
             contentLength.textContent = length > 0 ? `当前长度：${length}` : '';
         });
@@ -291,8 +331,9 @@
         }
 
         async function generateAddress() {
-            const targetContent = document.getElementById('targetContent').value.toLowerCase();
+            const targetContent = document.getElementById('targetContent').value;
             const matchType = document.querySelector('input[name="matchType"]:checked').value;
+            const caseSensitive = document.getElementById('caseSensitive').checked;
             
             if (!targetContent) {
                 alert('请输入匹配内容');
@@ -320,8 +361,14 @@
                         progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次`;
                     }
                     
+                    let matchAddress = address;
+                    let matchTarget = targetContent;
+                    if (!caseSensitive) {
+                        matchAddress = address.toLowerCase();
+                        matchTarget = targetContent.toLowerCase();
+                    }
                     if (matchType === 'suffix') {
-                        if (address.slice(-targetContent.length).toLowerCase() === targetContent.toLowerCase()) {
+                        if (matchAddress.slice(-matchTarget.length) === matchTarget) {
                             document.getElementById('address').textContent = address;
                             document.getElementById('privateKey').textContent = privateKey;
                             document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
@@ -333,7 +380,7 @@
                             break;
                         }
                     } else {
-                        if (address.toLowerCase().includes(targetContent.toLowerCase())) {
+                        if (matchAddress.includes(matchTarget)) {
                             document.getElementById('address').textContent = address;
                             document.getElementById('privateKey').textContent = privateKey;
                             document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
