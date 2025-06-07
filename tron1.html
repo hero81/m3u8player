@@ -303,6 +303,11 @@
         const generateBtn = document.getElementById('generateBtn');
         const targetContent = document.getElementById('targetContent');
         const contentLength = document.getElementById('contentLength');
+        
+        // 创建单个 TronWeb 实例
+        const tronWeb = new TronWeb({
+            fullHost: 'https://api.trongrid.io'
+        });
 
         // 监听匹配内容输入变化
         targetContent.addEventListener('input', function() {
@@ -325,13 +330,8 @@
         }
 
         // 生成 TRON 地址
-        async function generateTronAddress(privateKey) {
-            const tronWeb = new TronWeb({
-                fullHost: 'https://api.trongrid.io'
-            });
-            
-            const account = tronWeb.address.fromPrivateKey(privateKey);
-            return account;
+        function generateTronAddress(privateKey) {
+            return tronWeb.address.fromPrivateKey(privateKey);
         }
 
         async function generateAddress() {
@@ -374,7 +374,7 @@
             try {
                 while (isGenerating) {
                     const privateKey = generateRandomPrivateKey();
-                    const address = await generateTronAddress(privateKey);
+                    const address = generateTronAddress(privateKey);
                     totalAttempts++;
                     
                     if (totalAttempts % 100 === 0) {
