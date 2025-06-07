@@ -373,30 +373,40 @@
             
             try {
                 while (isGenerating) {
-                    const privateKey = generateRandomPrivateKey();
-                    const address = generateTronAddress(privateKey);
-                    totalAttempts++;
+                    // 批量生成地址
+                    const batchSize = 1000;
+                    const batch = [];
                     
-                    if (totalAttempts % 100 === 0) {
-                        progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次`;
+                    for (let i = 0; i < batchSize; i++) {
+                        const privateKey = generateRandomPrivateKey();
+                        const address = generateTronAddress(privateKey);
+                        batch.push({ privateKey, address });
                     }
                     
-                    if (regex.test(address)) {
-                        document.getElementById('address').textContent = address;
-                        document.getElementById('privateKey').textContent = privateKey;
-                        document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
-                        document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
-                        
-                        result.classList.add('show');
-                        isGenerating = false;
-                        generateBtn.textContent = '开始生成';
-                        break;
+                    totalAttempts += batchSize;
+                    
+                    // 检查批次中的地址
+                    for (const { privateKey, address } of batch) {
+                        if (regex.test(address)) {
+                            document.getElementById('address').textContent = address;
+                            document.getElementById('privateKey').textContent = privateKey;
+                            document.getElementById('attempts').textContent = totalAttempts.toLocaleString();
+                            document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(2);
+                            
+                            result.classList.add('show');
+                            isGenerating = false;
+                            generateBtn.textContent = '开始生成';
+                            break;
+                        }
                     }
                     
-                    // 每生成1000个地址暂停一下，避免阻塞主线程
                     if (totalAttempts % 1000 === 0) {
+                        progress.textContent = `已尝试 ${totalAttempts.toLocaleString()} 次`;
+                        // 让出主线程
                         await new Promise(resolve => setTimeout(resolve, 0));
                     }
+                    
+                    if (!isGenerating) break;
                 }
             } catch (error) {
                 inputError.textContent = '生成失败，请重试';
