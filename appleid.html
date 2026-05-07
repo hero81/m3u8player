@@ -1,0 +1,119 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple ID 共享</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+    body { font-family: 'Inter', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 antialiased">
+  <div class="max-w-3xl mx-auto px-4 py-8">
+    
+    <div class="flex justify-between items-center mb-8">
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Your IP:</span>
+        <span class="text-[10px] font-bold text-indigo-500 mono">82.152.160.200</span>
+      </div>
+    </div>
+
+    <header class="text-center mb-10">
+      <h1 class="text-3xl font-black text-slate-900 tracking-tighter">公益<span class="text-indigo-600">ID 共享</span></h1>
+      <p class="text-[11px] text-slate-400 mt-2 uppercase tracking-[0.2em]">High Performance Apple ID Distribution</p>
+    </header>
+
+    <section class="bg-white border-2 border-red-50 rounded-2xl p-6 mb-8 shadow-sm">
+      <h4 class="text-red-500 text-xs font-black mb-4 flex items-center uppercase tracking-widest">
+        <i class="fas fa-gavel mr-2"></i> 最终用户使用守则 & 免责协议
+      </h4>
+      <div class="text-[11px] text-slate-500 leading-relaxed space-y-3">
+        <p class="bg-red-50 p-2 rounded border-l-4 border-red-400 text-red-700 font-bold">1. 严禁在 iPhone [设置] 中登录 iCloud：仅允许在 App Store 登录。若因此操作导致设备锁机、数据丢失或隐私泄露，本站概不负责，不提供任何解开或赔偿服务。</p>
+        <p>2. <b>操作规范</b>：登录如遇 [双重认证]，请务必选择 [其他选项] -> [不升级]。禁止通过任何手段修改账号资料或绑定手机号。</p>
+        <p>3. <b>服务独立性</b>：本页面所列 ID 仅供交流学习。</p>
+        <p>4. <b>隐私提示</b>：共享账号无隐私可言，请勿在登录期间进行任何金融支付或私密信息下载。系统会实时记录异常操作 IP 并进行封禁。</p>
+        <p>5. <b>自动声明</b>：若继续使用本站提供的账号，即代表您已完整阅读并同意以上所有条款，放弃追究本站任何法律责任的权利。</p>
+      </div>
+    </section>
+
+    <div id="account-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white animate-pulse h-40 rounded-2xl border border-slate-100"></div>
+      <div class="bg-white animate-pulse h-40 rounded-2xl border border-slate-100"></div>
+    </div>
+
+    <footer class="mt-16 text-center py-10 border-t border-slate-200">
+      <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase mb-2">Another Cloud Infrastructure</p>
+      <p class="text-[9px] text-slate-300">如遇账号锁定请稍后刷新，系统会自动排查更新</p>
+    </footer>
+  </div>
+
+  <script>
+    async function load() {
+      const res = await fetch('https://anotherappleid45564.v1vrhh6.workers.dev/api/get-accounts');
+      const list = await res.json();
+      const container = document.getElementById('account-list');
+      
+      container.innerHTML = list.map(acc => `
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:border-indigo-100 transition-all">
+          <div class="flex justify-between items-start mb-5">
+             <div class="flex flex-col gap-1">
+               <span class="text-[10px] font-black text-slate-800 uppercase tracking-tight">${acc.country || 'USA'}</span>
+               <div class="flex items-center gap-1.5">
+                 <span class="w-1.5 h-1.5 rounded-full ${acc.status === '正常' ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse"></span>
+                 <span class="text-[9px] font-bold text-slate-400 uppercase">${acc.status || 'Active'}</span>
+               </div>
+             </div>
+             <span class="text-[9px] font-mono text-slate-300">SYNC: ${acc.time || '-'}</span>
+          </div>
+          
+          <div class="space-y-2">
+            <div class="flex gap-2">
+              <div class="flex-1 min-w-0 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                <p class="text-[8px] text-slate-400 font-bold uppercase mb-0.5">Apple ID</p>
+                <p class="text-[11px] font-mono font-bold truncate text-slate-700">${acc.email}</p>
+              </div>
+              <button onclick="copy('${acc.email}', this)" class="bg-slate-900 text-white w-20 rounded-lg text-[10px] font-bold hover:bg-slate-700 transition-all shadow-sm">复制</button>
+            </div>
+
+            <div class="flex gap-2">
+              <div class="flex-1 min-w-0 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                <p class="text-[8px] text-slate-400 font-bold uppercase mb-0.5">Password</p>
+                <p class="text-[12px] font-mono text-slate-200 tracking-[0.5em]">••••••••</p>
+              </div>
+              <button onclick="copy('${acc.password}', this)" class="bg-indigo-600 text-white w-20 rounded-lg text-[10px] font-bold hover:bg-indigo-500 transition-all shadow-sm">密码</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function copy(text, btn) {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      const originalText = btn.innerText;
+      btn.innerText = 'OK';
+      const originalColor = btn.classList.contains('bg-slate-900') ? 'bg-slate-900' : 'bg-indigo-600';
+      btn.classList.remove(originalColor);
+      btn.classList.add('bg-emerald-500');
+
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.classList.remove('bg-emerald-500');
+        btn.classList.add(originalColor);
+      }, 800);
+    }
+    load();
+  </script>
+</body>
+</html>
